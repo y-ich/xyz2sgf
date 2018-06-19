@@ -11,15 +11,15 @@ const loaders = {
     },
     ".ngf": {
         "function": parseNgf,
-        "encoding": "gb18030"
+        "encoding": "GB18030"
     },
     ".ugf": {
         "function": parseUgf,
-        "encoding": "shift_jisx0213"
+        "encoding": "Shift_JIS"
     },
     ".ugi": {
         "function": parseUgf,
-        "encoding": "shift_jisx0213"
+        "encoding": "Shift_JIS"
     }
 };
 
@@ -27,7 +27,9 @@ const loaders = {
 
 const fs = require('fs');
 const MemoryStream = require('memorystream');
+const iconv = require('iconv-lite');
 
+const ENCODINGS = ['ascii', 'base64', 'binary', 'hex', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'utf8', 'utf-8'];
 class ValueError extends Error {}
 class BadBoardSize extends Error {}
 class ParserFail extends Error {}
@@ -168,10 +170,16 @@ function load(filename) {
     const ext = getExtension(filename);
 
     if (ext in loaders) {
-        const contents = fs.readFileSync(
-            filename,
-            { encoding: loaders[ext]["encoding"] }
-        );
+        let contents;
+        if (ENCODINGS.includes(loaders[ext]["encoding"])) {
+            contents = fs.readFileSync(
+                filename,
+                { encoding: loaders[ext]["encoding"] }
+            );
+        } else {
+            contents = fs.readFileSync(filename);
+            contents = iconv.decode(contents, loaders[ext]["encoding"]);
+        }
         return parse(contents, ext);
     } else {
         console.log("Couldn't detect file type -- make sure it has an extension of .gib, .ngf, .ugf || .ugi");
@@ -289,9 +297,9 @@ function parseUgf(ugf) {
         line = line.trim();
 
         try {
-            if (line.chatAt(0) === "[" && line.charAt(line.length - 1) === "]") {
+            if (line.charAt(0) === "[" && line.charAt(line.length - 1) === "]") {
 
-                const section = line.toUpperCase();
+                section = line.toUpperCase();
 
                 if (section === "[DATA]") {
 
@@ -365,7 +373,6 @@ function parseUgf(ugf) {
             }
 
         } else if (section === "[DATA]") {
-
             line = line.toUpperCase();
 
             const slist = line.split(",");
