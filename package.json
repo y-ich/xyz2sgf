@@ -1,0 +1,14 @@
+{
+  "name": "xyz2sgf",
+  "version": "0.0.1",
+  "description": "convert GIB, NGF, and UGF/UGI to SGF",
+  "main": "xyz2sgf.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ICHIKAWA, Yuji",
+  "license": "MIT",
+  "dependencies": {
+    "memorystream": "^0.3.1"
+  }
+}
