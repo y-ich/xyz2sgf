@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "convert GIB, NGF, and UGF/UGI to SGF",
   "main": "xyz2sgf.js",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/y-ich/xyz2sgf.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
