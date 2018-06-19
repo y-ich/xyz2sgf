@@ -153,26 +153,36 @@ function handicapPoints(boardsize, handicap, tygem = false) {
     return points;
 }
 
+
+function getExtension(filename) {
+    const match = filename.match(/(\.\w+)$/);
+    return match ? match[1].toLowerCase() : null;
+}
+
+
 function load(filename) {
     /**
      * FileNotFoundError is just allowed to bubble up
      * All the parsers below can throw ParserFail
      */
-    function getExtension(filename) {
-        const match = filename.match(/(\.\w+)$/);
-        return match ? match[1].toLowerCase() : null;
-    }
     const ext = getExtension(filename);
 
-    let root;
     if (ext in loaders) {
-        const contents = fs.readFileSync(filename, { encoding: loaders[ext]["encoding"]});
-        root = loaders[ext]["function"](contents);
-
+        const contents = fs.readFileSync(
+            filename,
+            { encoding: loaders[ext]["encoding"] }
+        );
+        return parse(contents, ext);
     } else {
         console.log("Couldn't detect file type -- make sure it has an extension of .gib, .ngf, .ugf || .ugi");
         throw new UnknownFormat();
     }
+
+}
+
+
+function parse(contents, ext) {
+    const root = loaders[ext]["function"](contents);
 
     root.setValue("FF", 4);
     root.setValue("GM", 1);
@@ -203,19 +213,28 @@ function saveFile(filename, root) {
     outfile.end();
 }
 
-
 function fileToConvertedString(filename) {
     return new Promise(function(res, rej) {
         const root = load(filename);
-        const stream = new MemoryStream();
-        stream.on('end', function() {
+        const stream = MemoryStream.createWriteStream();
+        writeTree(stream, root);
+        stream.end(function() {
             res(stream.toString());
         });
-        writeTree(stream, root);
-        stream.end();
     });
 }
 
+
+function xyz2sgf(str, ext) {
+    return new Promise(function(res, rej) {
+        const root = parse(str, ext);
+        const stream = MemoryStream.createWriteStream();
+        writeTree(stream, root);
+        stream.end(function() {
+            res(stream.toString());
+        });
+    });
+}
 
 function writeTree(writeStream, node) {
     /**
@@ -765,6 +784,8 @@ function main() {
 }
 
 exports.fileToConvertedString = fileToConvertedString;
+exports.getExtension = getExtension;
+exports.xyz2sgf = xyz2sgf;
 
 if (require.main === module) {
     main();
