@@ -182,7 +182,6 @@ function load(filename) {
         }
         return parse(contents, ext);
     } else {
-        console.log("Couldn't detect file type -- make sure it has an extension of .gib, .ngf, .ugf || .ugi");
         throw new UnknownFormat();
     }
 
@@ -784,6 +783,9 @@ function main() {
             const outfilename = baseName(filename) + ".sgf";
             saveFile(outfilename, root);
         } catch (e) {
+            if (e instanceof UnknownFormat) {
+                console.log("Couldn't detect file type -- make sure it has an extension of .gib, .ngf, .ugf || .ugi");
+            }
             console.log(`Conversion failed for ${filename}`);
             console.log(e);
         }
